@@ -12,21 +12,21 @@ jobs:
 
     strategy:
       matrix:
-        docker: [opensuse/tumbleweed, opensuse/leap, 'fedora:33']
+        docker: ['registry.opensuse.org/opensuse/tumbleweed-dnf', 'registry.opensuse.org/opensuse/tumbleweed', 'registry.opensuse.org/opensuse/leap', 'registry.fedoraproject.org/fedora:33']
         pkg: [dnf]
         include:
-          - docker: opensuse/tumbleweed
+          - docker: 'registry.opensuse.org/opensuse/tumbleweed'
             pkg: zypper
-          - docker: opensuse/leap
+          - docker: 'registry.opensuse.org/opensuse/leap'
             pkg: zypper
 
     container: ${{ matrix.docker }}
 
     steps:
       - run: zypper -n install dnf
-        if: ${{ startsWith(matrix.docker,  'opensuse') }}
+        if: ${{ (matrix.docker == 'registry.opensuse.org/opensuse/leap' || matrix.docker == 'registry.opensuse.org/opensuse/tumbleweed') && matrix.pkg == 'dnf' }}
       - run: cp -r /etc/zypp/repos.d /etc/dnf/
-        if: ${{ startsWith(matrix.docker,  'opensuse') && matrix.pkg == 'dnf' }}
+        if: ${{ (matrix.docker == 'registry.opensuse.org/opensuse/leap' || matrix.docker == 'registry.opensuse.org/opensuse/tumbleweed') && matrix.pkg == 'dnf' }}
       - run: dnf -y install
               checkbashisms cpio dash gzip
               bzip2 xz
@@ -52,7 +52,7 @@ jobs:
               python3-zstd
               python3-toml
               rpm-build
-        if: ${{ startsWith(matrix.docker,  'opensuse') && matrix.pkg == 'dnf'}}
+        if: ${{ ((matrix.docker == 'registry.opensuse.org/opensuse/leap' || matrix.docker == 'registry.opensuse.org/opensuse/tumbleweed') && matrix.pkg == 'dnf') || matrix.docker == 'registry.opensuse.org/opensuse/tumbleweed-dnf' }}
       - run: zypper -n install
               checkbashisms cpio dash gzip
               bzip2 xz
@@ -78,7 +78,7 @@ jobs:
               python3-zstd
               python3-toml
               rpm-build
-        if: ${{ startsWith(matrix.docker,  'opensuse') && matrix.pkg == 'zypper'}}
+        if: ${{ startsWith(matrix.docker, 'registry.opensuse.org/opensuse') && matrix.pkg == 'zypper'}}
       - run: dnf --nogpgcheck -y install
               /usr/bin/appstream-util
               /usr/bin/cpio
@@ -110,4 +110,4 @@ jobs:
               python3-toml
               python3-zstd
               rpm-build
-        if: ${{ matrix.docker == 'fedora:33' }}
+        if: ${{ startsWith(matrix.docker, 'registry.fedoraproject.org/fedora') }}
